@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "AVR",
+            "includePath": [
+                "/opt/homebrew/Cellar/avr-gcc@14/14.3.0/avr/include",
+                "${workspaceFolder}/inc"
+            ],
+            "defines": [
+                "F_CPU=16000000UL",
+                "__AVR_ATmega328PB__"
+            ],
+            "compilerPath": "/opt/homebrew/opt/avr-gcc@14/bin/avr-gcc",
+            "cStandard": "c99",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}
