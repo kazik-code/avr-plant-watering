@@ -1,10 +1,11 @@
 MCU     = atmega328pb
 F_CPU   = 16000000UL
 CC      = avr-gcc
-CFLAGS  = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Os -Wall -std=c99 -Iinc
+INCDIRS = $(sort $(dir $(shell find lib -name '*.h' 2>/dev/null)))
+CFLAGS  = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Os -Wall -std=c99 -Iinc $(addprefix -I,$(INCDIRS))
 
 TARGET  = plant-watering
-SRCS    = $(wildcard src/*.c)
+SRCS    = $(shell find src lib -name '*.c')
 
 $(TARGET).hex: $(TARGET).elf
 
