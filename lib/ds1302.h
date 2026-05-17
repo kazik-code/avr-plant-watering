@@ -13,3 +13,4 @@ typedef struct {
 
 void ds1302_init(void);
 void ds1302_set_time(const ds1302_time_t *t);
+void ds1302_get_time(ds1302_time_t *t);
