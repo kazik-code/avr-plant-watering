@@ -8,7 +8,7 @@
 static void ADC_init(void)
 {
     ADMUX = (1 << REFS0); // AVcc reference
-    ADMUX |= (1 << MUX0) | (1 << ADLAR);
+    ADMUX |= (1 << ADLAR); // kanał ADC0 (PC0 = SENSOR_PIN), wynik wyrównany w lewo → ADCH
     ADCSRA = (1 << ADEN) | (7 << ADPS0); // Prescaler 128
 
     // Według datasheeta, pierwszy odczyt jest śmieciowy, więc wykonujemy go przy init
@@ -20,12 +20,12 @@ void moisture_sensor_init(void)
 {
     DDRC  &= ~(1 << SENSOR_PIN);
     DDRC  |=  (1 << DISABLE_PIN);
-    ADC_init();
 }
 
 void moisture_sensor_enable(void)
 {
     PORTC &= ~(1 << DISABLE_PIN);
+    ADC_init();
 }
 
 void moisture_sensor_disable(void)
