@@ -39,7 +39,7 @@ static void write_byte(uint8_t byte)
     DAT_OUT();
     for (uint8_t i = 0; i < 8; i++) {
         if (byte & (1 << i)) DAT_HIGH(); else DAT_LOW();
-        CLK_HIGH(); // DS1302 próbkuje dane na rosnącym zboczu
+        CLK_HIGH(); 
         CLK_LOW();
     }
 }

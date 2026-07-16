@@ -8,7 +8,7 @@
 static void ADC_init(void)
 {
     ADMUX = (1 << REFS0); // AVcc reference
-    ADMUX |= (1 << ADLAR); // kanał ADC0 (PC0 = SENSOR_PIN), wynik wyrównany w lewo → ADCH
+    ADMUX |= (1 << ADLAR); // 8 bit ADCH
     ADCSRA = (1 << ADEN) | (7 << ADPS0); // Prescaler 128
 
     // Według datasheeta, pierwszy odczyt jest śmieciowy, więc wykonujemy go przy init

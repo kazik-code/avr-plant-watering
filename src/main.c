@@ -10,7 +10,7 @@
 // WDT budzi co ~8 s tylko po to, by odpytać RTC — o interwale decyduje zegar
 #define CHECK_INTERVAL_MIN 15
 #define PUMP_TICKS          2
-#define BUTTON_PIN          PD2 // INT0 — wymuszenie pomiaru poza harmonogramem
+#define BUTTON_PIN          PD2
 
 static volatile uint8_t wdt_flag    = 0;
 static volatile uint8_t button_flag = 0;
@@ -34,9 +34,8 @@ ISR(INT0_vect)
 
 static void button_init(void)
 {
-    DDRD  &= ~(1 << BUTTON_PIN); // wejście
-    PORTD |=  (1 << BUTTON_PIN); // pull-up wewnętrzny — przycisk zwiera do GND
-    // INT0 wyzwalany niskim poziomem — jedyny tryb budzący z SLEEP_MODE_PWR_DOWN
+    DDRD  &= ~(1 << BUTTON_PIN);
+    PORTD |=  (1 << BUTTON_PIN);
     EICRA &= ~((1 << ISC01) | (1 << ISC00));
     EIMSK |=  (1 << INT0);
 }
@@ -56,9 +55,9 @@ static void pump_run(void)
 // Pełny cykl: pomiar → sygnalizacja → podlanie tylko gdy sucho
 static void check_and_water(void)
 {
-    moisture_sensor_enable();
+    //moisture_sensor_enable();
     uint8_t raw = read_moisture();
-    moisture_sensor_disable();
+    //moisture_sensor_disable();
 
     moisture_state_t state = moisture_classify(raw);
     led_set_state(state); // sygnalizacja stanu na diodach
@@ -82,6 +81,7 @@ int main(void)
     };
     ds1302_set_time(&t);
     moisture_sensor_init();
+    moisture_sensor_enable();
     led_init();
     button_init();
     wdt_init();
@@ -97,13 +97,12 @@ int main(void)
 
         uint8_t do_check = 0;
 
-        // Przycisk (INT0) — bezwarunkowy pomiar poza harmonogramem RTC
+        // Przycisk — pomiar poza harmonogramem 
         if (button_flag) {
             button_flag = 0;
             do_check = 1;
         }
 
-        // WDT — pomiar planowy, gdy RTC pokaże upływ CHECK_INTERVAL_MIN
         if (wdt_flag) {
             wdt_flag = 0;
             ds1302_get_time(&now);
