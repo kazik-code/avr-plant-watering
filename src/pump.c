@@ -1,7 +1,7 @@
 #include "pump.h"
 #include <avr/io.h>
 
-#define GATE_PIN PB5
+#define GATE_PIN PB4
 
 void pump_init(void)
 {

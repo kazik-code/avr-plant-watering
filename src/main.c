@@ -6,6 +6,7 @@
 #include "ds1302.h"
 #include "moisture_sensor.h"
 #include "led.h"
+#include "i2c_line.h"
 
 // WDT budzi co ~8 s tylko po to, by odpytać RTC — o interwale decyduje zegar
 #define CHECK_INTERVAL_MIN 15
@@ -55,9 +56,7 @@ static void pump_run(void)
 // Pełny cykl: pomiar → sygnalizacja → podlanie tylko gdy sucho
 static void check_and_water(void)
 {
-    //moisture_sensor_enable();
     uint8_t raw = read_moisture();
-    //moisture_sensor_disable();
 
     moisture_state_t state = moisture_classify(raw);
     led_set_state(state); // sygnalizacja stanu na diodach
@@ -66,10 +65,20 @@ static void check_and_water(void)
         pump_run();
 }
 
-int main(void)
+static void init_peripherals(void)
 {
     pump_init();
     ds1302_init();
+    moisture_sensor_init();
+    led_init();
+    button_init();
+    wdt_init();
+    i2c_init();
+}
+
+int main(void)
+{
+    init_peripherals();
     ds1302_time_t t = {
         .seconds = 0,
         .minutes = 0,
@@ -79,12 +88,6 @@ int main(void)
         .day     = 3,
         .year    = 26,
     };
-    ds1302_set_time(&t);
-    moisture_sensor_init();
-    moisture_sensor_enable();
-    led_init();
-    button_init();
-    wdt_init();
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     sei();
 
@@ -93,6 +96,13 @@ int main(void)
     uint16_t last_check = (uint16_t)now.hours * 60 + now.minutes; // minuta doby 0–1439
 
     while (1) {
+        
+        if (i2c_ping_device(0x3C)) {
+            PORTD |= (1 << LED_ACK_PING);
+        } else {
+            PORTD &= ~(1 << LED_ACK_PING);
+        }
+
         sleep_mode();
 
         uint8_t do_check = 0;

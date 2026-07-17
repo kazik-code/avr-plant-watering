@@ -11,8 +11,8 @@ void led_init(void)
     DDRD  |=  LED_MASK;
     PORTD &= ~LED_MASK;
 
-    DDRD  |=  (1 << LED_ACK_PROBLEM);
-    PORTD &= ~(1 << LED_ACK_PROBLEM);
+    DDRD  |=  (1 << LED_ACK_PING);
+    PORTD &= ~(1 << LED_ACK_PING);
 }
 
 void led_set_state(moisture_state_t state)

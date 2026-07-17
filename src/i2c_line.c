@@ -7,7 +7,6 @@
 
 #define SCL_I2C PC5
 #define SDA_I2C PC4
-#define OLED_ADDRESS 0x3C
 
 inline static void set_low(uint8_t pin)
 {
@@ -70,6 +69,8 @@ static void send_ack(bool ack)
     release_high(SCL_I2C);
     _delay_us(1);
     set_low(SCL_I2C);
+
+    release_high(SDA_I2C);
 }
 
 bool send_byte(uint8_t frame)
@@ -111,4 +112,12 @@ uint8_t get_byte(bool is_last_byte)
     send_ack(!is_last_byte);
     return received_byte;
 }
-   
+ 
+bool i2c_ping_device(uint8_t address)
+{
+    start_condition();
+    uint8_t frame = create_initial_frame(address, false);
+    bool ack = send_byte(frame);
+    stop_condition();
+    return ack;
+}
