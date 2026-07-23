@@ -26,14 +26,14 @@ void i2c_init(void)
     release_high(SDA_I2C);
 }
 
-inline static void start_condition(void)
+inline void start_condition(void)
 {
     set_low(SDA_I2C);
     _delay_us(1);
     set_low(SCL_I2C);
 }
 
-inline static void stop_condition(void)
+inline void stop_condition(void)
 {
     set_low(SDA_I2C);
     _delay_us(1);
