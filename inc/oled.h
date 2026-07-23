@@ -1,5 +1,10 @@
 #pragma once
 #include <stdint.h>
+#include <stdbool.h>
+
+bool oled_init(void);
+bool oled_display_test(void);
+bool oled_clear_display(void);
 
 
 typedef enum {
@@ -17,3 +22,9 @@ typedef enum {
     OLED_SET_COLUMN_ADDRESS     = 0x21,
     OLED_SET_PAGE_ADDRESS       = 0x22,
 } oled_addressing_commad_t;
+
+typedef enum {
+    OLED_ADDRESSING_HORIZONTAL = 0x00,
+    OLED_ADDRESSING_VERTICAL   = 0x01,
+    OLED_ADDRESSING_PAGE       = 0x02,
+} oled_addressing_mode_t;

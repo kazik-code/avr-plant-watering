@@ -2,13 +2,16 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
+#include <util/delay.h>
 #include "pump.h"
 #include "ds1302.h"
 #include "moisture_sensor.h"
 #include "led.h"
 #include "i2c_line.h"
+#include "oled.h"
+#include "font_5x7.h"
 
-// WDT budzi co ~8 s tylko po to, by odpytać RTC — o interwale decyduje zegar
+
 #define CHECK_INTERVAL_MIN 15
 #define PUMP_TICKS          2
 #define BUTTON_PIN          PD2
@@ -30,6 +33,7 @@ static void wdt_init(void)
 
 ISR(INT0_vect)
 {
+    //EIMSK &= ~(1 << INT0);
     button_flag = 1;
 }
 
@@ -56,7 +60,18 @@ static void pump_run(void)
 // Pełny cykl: pomiar → sygnalizacja → podlanie tylko gdy sucho
 static void check_and_water(void)
 {
-    uint8_t raw = read_moisture();
+    moisture_sensor_enable();
+    _delay_ms(500);
+
+    uint16_t sum = 0;
+
+    for (uint8_t i = 0; i < 16; i++) {
+        sum += read_moisture();
+        _delay_ms(10);
+    }
+
+    uint8_t raw = sum / 16;
+    moisture_sensor_disable();
 
     moisture_state_t state = moisture_classify(raw);
     led_set_state(state); // sygnalizacja stanu na diodach
@@ -70,10 +85,13 @@ static void init_peripherals(void)
     pump_init();
     ds1302_init();
     moisture_sensor_init();
+    moisture_sensor_disable();
     led_init();
     button_init();
     wdt_init();
     i2c_init();
+    oled_init();
+    oled_display_test();
 }
 
 int main(void)
@@ -103,7 +121,7 @@ int main(void)
             PORTD &= ~(1 << LED_ACK_PING);
         }
 
-        sleep_mode();
+        
 
         uint8_t do_check = 0;
 
@@ -130,5 +148,7 @@ int main(void)
 
         if (do_check)
             check_and_water();
+        
+        sleep_mode();
     }
 }

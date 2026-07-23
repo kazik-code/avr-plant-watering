@@ -26,14 +26,14 @@ void i2c_init(void)
     release_high(SDA_I2C);
 }
 
-inline void start_condition(void)
+void start_condition(void)
 {
     set_low(SDA_I2C);
     _delay_us(1);
     set_low(SCL_I2C);
 }
 
-inline void stop_condition(void)
+void stop_condition(void)
 {
     set_low(SDA_I2C);
     _delay_us(1);
@@ -42,7 +42,7 @@ inline void stop_condition(void)
     release_high(SDA_I2C);
 }
 
-inline static uint8_t create_initial_frame(uint8_t address, bool read)
+uint8_t create_initial_frame(uint8_t address, bool read)
 {
     uint8_t frame = (address << 1) | read;
     return frame;
