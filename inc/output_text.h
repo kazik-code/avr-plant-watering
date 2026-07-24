@@ -1,20 +1,39 @@
 typedef struct {
-    char day1[17];
-    char day2[17];
-    char day3[17];
-    char day4[17];
-    char day5[17];
-    char day6[17];
-    char day7[17];
+    const char *items[7];
 } DaysOfWeek;
 
 const DaysOfWeek days = {
-    .day1 = "Poniedzialek",
-    .day2 = "Wtorek",
-    .day3 = "Sroda",
-    .day4 = "Czwartek",
-    .day5 = "Piatek",
-    .day6 = "Sobota",
-    .day7 = "Niedziela"
+    .items = {
+        "Poniedzialek",
+        "Wtorek",
+        "Sroda",
+        "Czwartek",
+        "Piatek",
+        "Sobota",
+        "Niedziela"
+    }
 };
 
+typedef struct {
+    char watering[sizeof("Podlewanie...")];
+    char currentHumidity[sizeof("Akt. wilgotnosc:")];
+    char menu[sizeof("MENU")];
+    char wateredToday[sizeof("Dzis podlano:")];
+    char brightness[sizeof("Jasnosc")];
+    char contrast[sizeof("Kontrast")];
+    char waterNow[sizeof("Podlej teraz")];
+    char checkHumidity[sizeof("Sprawdz wilg: >")];
+    char settings[sizeof("Ustawienia")];
+} Keywords;
+
+const Keywords keywords = {
+    .watering        = "Podlewanie...",
+    .currentHumidity = "Akt. wilgotnosc:",
+    .menu             = "MENU",
+    .wateredToday     = "Dzis podlano:",
+    .brightness       = "Jasnosc",
+    .contrast         = "Kontrast",
+    .waterNow         = "Podlej teraz",
+    .checkHumidity    = "Sprawdz wilg: >",
+    .settings         = "Ustawienia"
+};

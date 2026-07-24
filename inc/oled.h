@@ -5,6 +5,7 @@
 bool oled_init(void);
 bool oled_display_test(void);
 bool oled_clear_display(void);
+bool oled_write_centered_text(const char *text, uint8_t page);
 
 
 typedef enum {

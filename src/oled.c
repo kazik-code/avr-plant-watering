@@ -1,9 +1,16 @@
 #include <avr/io.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <util/delay.h>
 #include "i2c_line.h"
 #include "oled.h"
 #include "font_5x7.h"
+
+#define OLED_I2C_ADDRESS       0x3C
+#define OLED_WIDTH             128
+#define OLED_PAGE_COUNT        8
+#define FONT_5X7_CELL_WIDTH    (FONT_5X7_WIDTH + 1)
+#define OLED_MAX_TEXT_LENGTH   (OLED_WIDTH / FONT_5X7_CELL_WIDTH)
 
 /*
  * SSD1306 I2C control byte:
@@ -85,6 +92,75 @@ bool oled_write_char(char character)
 
     // Pusta kolumna jako odstęp poziomy.
     return send_byte(0x00);
+}
+
+bool oled_write_centered_text(const char *text, uint8_t page)
+{
+    if (text == NULL || page >= OLED_PAGE_COUNT) {
+        return false;
+    }
+
+    uint8_t text_length = 0;
+
+    while (text[text_length] != '\0') {
+        if (text_length == OLED_MAX_TEXT_LENGTH) {
+            return false;
+        }
+        ++text_length;
+    }
+
+    /*
+     * Ostatni znak nie potrzebuje odstępu do obliczenia wizualnej
+     * szerokości tekstu. oled_write_char() nadal wysyła tę pustą kolumnę,
+     * dzięki czemu reszta strony może zostać wyczyszczona jednym przebiegiem.
+     */
+    uint8_t text_width = 0;
+    if (text_length > 0) {
+        text_width = text_length * FONT_5X7_CELL_WIDTH - 1U;
+    }
+
+    uint8_t left_padding = (OLED_WIDTH - text_width) / 2U;
+
+    start_condition();
+    bool success =
+        send_byte(create_initial_frame(OLED_I2C_ADDRESS, false)) &&
+        send_command_byte(false, false) &&
+        send_byte(OLED_SET_COLUMN_ADDRESS) &&
+        send_byte(0) &&
+        send_byte(OLED_WIDTH - 1U) &&
+        send_byte(OLED_SET_PAGE_ADDRESS) &&
+        send_byte(page) &&
+        send_byte(page);
+    stop_condition();
+
+    if (!success) {
+        return false;
+    }
+
+    start_condition();
+    success =
+        send_byte(create_initial_frame(OLED_I2C_ADDRESS, false)) &&
+        send_command_byte(false, true);
+
+    uint8_t bytes_written = 0;
+
+    while (success && bytes_written < left_padding) {
+        success = send_byte(0x00);
+        ++bytes_written;
+    }
+
+    for (uint8_t i = 0; success && i < text_length; ++i) {
+        success = oled_write_char(text[i]);
+        bytes_written += FONT_5X7_CELL_WIDTH;
+    }
+
+    while (success && bytes_written < OLED_WIDTH) {
+        success = send_byte(0x00);
+        ++bytes_written;
+    }
+
+    stop_condition();
+    return success;
 }
 
 bool oled_display_test(){
