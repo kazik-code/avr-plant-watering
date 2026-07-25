@@ -1,18 +1,8 @@
+#pragma once
+
 typedef struct {
     const char *items[7];
 } DaysOfWeek;
-
-const DaysOfWeek days = {
-    .items = {
-        "Poniedzialek",
-        "Wtorek",
-        "Sroda",
-        "Czwartek",
-        "Piatek",
-        "Sobota",
-        "Niedziela"
-    }
-};
 
 typedef struct {
     char watering[sizeof("Podlewanie...")];
@@ -26,14 +16,5 @@ typedef struct {
     char settings[sizeof("Ustawienia")];
 } Keywords;
 
-const Keywords keywords = {
-    .watering        = "Podlewanie...",
-    .currentHumidity = "Akt. wilgotnosc:",
-    .menu             = "MENU",
-    .wateredToday     = "Dzis podlano:",
-    .brightness       = "Jasnosc",
-    .contrast         = "Kontrast",
-    .waterNow         = "Podlej teraz",
-    .checkHumidity    = "Sprawdz wilg: >",
-    .settings         = "Ustawienia"
-};
+extern const DaysOfWeek days;
+extern const Keywords keywords;

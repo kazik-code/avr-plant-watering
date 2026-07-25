@@ -15,7 +15,7 @@ PROGRAMMER = arduino
 BAUD    = 115200
 
 TARGET  = plant-watering
-SRCS    = $(shell find src lib -name '*.c')
+SRCS    = $(shell find src lib -name '*.c' 2>/dev/null)
 
 $(TARGET).hex: $(TARGET).elf
 
