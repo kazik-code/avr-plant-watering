@@ -1,34 +1,24 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
-#include <avr/wdt.h>
 #include "pump.h"
 #include "ds1302.h"
 #include "moisture_sensor.h"
 #include "led.h"
+#include "i2c_line.h"
+#include "oled.h"
+#include "ui.h"
+#include "watchdog.h"
+#include "watering.h"
 
-// WDT budzi co ~8 s tylko po to, by odpytać RTC — o interwale decyduje zegar
 #define CHECK_INTERVAL_MIN 15
-#define PUMP_TICKS          2
 #define BUTTON_PIN          PD2
 
-static volatile uint8_t wdt_flag    = 0;
 static volatile uint8_t button_flag = 0;
-
-ISR(WDT_vect)
-{
-    WDTCSR |= (1 << WDIE); // Przerwanie czyści flagę WDIE
-    wdt_flag = 1;
-}
-
-static void wdt_init(void)
-{
-    WDTCSR = (1 << WDCE) | (1 << WDE);
-    WDTCSR = (1 << WDIE) | (1 << WDP3) | (1 << WDP0); // ~8s, tryb przerwania
-}
 
 ISR(INT0_vect)
 {
+    //EIMSK &= ~(1 << INT0);
     button_flag = 1;
 }
 
@@ -40,51 +30,34 @@ static void button_init(void)
     EIMSK |=  (1 << INT0);
 }
 
-static void pump_run(void)
+static void init_peripherals(void)
 {
-    pump_on();
-    wdt_reset(); // synchronizuj licznik z momentem startu
-    for (uint8_t i = 0; i < PUMP_TICKS; i++) {
-        wdt_flag = 0;
-        while (!wdt_flag)
-            sleep_mode();
-    }
-    pump_off();
-}
+    pump_init();
+    ds1302_init();
+    moisture_sensor_init();
+    moisture_sensor_disable();
+    led_init();
+    button_init();
+    wdt_set_prescaler(WDT_PERIOD_8_S);
+    i2c_init();
+    oled_init();
 
-// Pełny cykl: pomiar → sygnalizacja → podlanie tylko gdy sucho
-static void check_and_water(void)
-{
-    //moisture_sensor_enable();
-    uint8_t raw = read_moisture();
-    //moisture_sensor_disable();
+    // ds1302_time_t init_time = {
+    //     .seconds = 0,
+    //     .minutes = 1,
+    //     .hours   = 17,
+    //     .date    = 24,
+    //     .month   = 7,
+    //     .day     = 5,
+    //     .year    = 26,
+    // };
 
-    moisture_state_t state = moisture_classify(raw);
-    led_set_state(state); // sygnalizacja stanu na diodach
-
-    if (state == MOISTURE_DRY)
-        pump_run();
+    // ds1302_set_time(&init_time);
 }
 
 int main(void)
 {
-    pump_init();
-    ds1302_init();
-    ds1302_time_t t = {
-        .seconds = 0,
-        .minutes = 0,
-        .hours   = 12,
-        .date    = 1,
-        .month   = 1,
-        .day     = 3,
-        .year    = 26,
-    };
-    ds1302_set_time(&t);
-    moisture_sensor_init();
-    moisture_sensor_enable();
-    led_init();
-    button_init();
-    wdt_init();
+    init_peripherals();
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     sei();
 
@@ -92,8 +65,11 @@ int main(void)
     ds1302_get_time(&now);
     uint16_t last_check = (uint16_t)now.hours * 60 + now.minutes; // minuta doby 0–1439
 
+
+
     while (1) {
-        sleep_mode();
+        ds1302_get_time(&now);
+        display_default_page(now);
 
         uint8_t do_check = 0;
 
@@ -105,7 +81,7 @@ int main(void)
 
         if (wdt_flag) {
             wdt_flag = 0;
-            ds1302_get_time(&now);
+
             uint16_t mod = (uint16_t)now.hours * 60 + now.minutes;
 
             int16_t diff = (int16_t)mod - (int16_t)last_check;
@@ -118,7 +94,12 @@ int main(void)
             }
         }
 
-        if (do_check)
+        if (do_check){
             check_and_water();
+            ds1302_get_time(&now);
+            display_default_page(now);
+        }
+
+        sleep_mode();
     }
 }
