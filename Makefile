@@ -1,4 +1,4 @@
-MCU     = atmega328p
+MCU     = atmega168
 F_CPU   = 16000000UL
 CC      = avr-gcc
 INCDIRS = $(sort $(dir $(shell find lib -name '*.h' 2>/dev/null)))
@@ -6,13 +6,9 @@ CFLAGS  = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Os -Wall -std=c99 -Iinc $(addprefix -I,
 AVRDUDE = avrdude
 PORT    ?= $(shell ls /dev/cu.usbmodem* /dev/cu.usbserial* 2>/dev/null | head -n 1)
 
-# Arduino Nano (bootloader)
-#PROGRAMMER = arduino
-#BAUD    = 57600
-
-# Arduino Uno (bootloader)
+# Arduino Nano ATmega168/168V (classic bootloader)
 PROGRAMMER = arduino
-BAUD    = 115200
+BAUD    = 19200
 
 TARGET  = plant-watering
 SRCS    = $(shell find src lib -name '*.c' 2>/dev/null)
