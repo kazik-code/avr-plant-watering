@@ -31,7 +31,6 @@ static void format_date(char output[11], uint8_t date, uint8_t month, uint8_t ye
 void display_default_page(ds1302_time_t now)
 {
     oled_write_centered_text("PODLEWACZKA DLA KOTKA", 4);
-    //oled_write_centered_text("DLA MLEMIKA <3", 1);
     char temp_time[6];
     format_time(temp_time, now.hours, now.minutes);
     oled_write_centered_text(temp_time, 6);

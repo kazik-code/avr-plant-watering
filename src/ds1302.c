@@ -119,7 +119,7 @@ void ds1302_get_time(ds1302_time_t *t)
 {
     uint8_t dummy;
     read_register(READ_SECONDS, &dummy);
-    t->seconds = from_bcd(dummy & 0x7F); // bit7 to CH, ignorujemy
+    t->seconds = from_bcd(dummy & 0x7F); 
     read_register(READ_MINUTES, &dummy);
     t->minutes = from_bcd(dummy);
     read_register(READ_HOURS,   &dummy);
